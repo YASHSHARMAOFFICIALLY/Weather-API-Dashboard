@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f4f6f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #333;
+    }
+
+    .card {
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .forecast-table th, 
+    .forecast-table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .forecast-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .alert {
+        border-radius: 12px;
+        font-size: 1rem;
+        padding: 15px;
+    }
+
+    .list-group-item {
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        border-radius: 10px;
+    }
+
+    .search-box {
+        max-width: 500px;
+        margin: 0 auto 30px auto;
+    }
+</style>
+
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🌦 Weather Dashboard</h2>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-sm">Logout</a>
+    </div>
+
+    <!-- Search Box -->
+    <form method="POST" action="{{ url_for('table.search_city') }}" class="search-box">
+        <div class="input-group shadow-sm">
+            <input type="text" class="form-control" name="search_city" placeholder="🔍 Enter city name" required>
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
+    {% if current_weather %}
+    <!-- Current Weather -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h4 class="mb-3 text-primary">Current Weather</h4>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>📍 City:</strong> {{ current_weather.city }}</p>
+                <p><strong>📅 Date:</strong> {{ current_weather.date }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>🌤 Condition:</strong> {{ current_weather.condition }} {{ current_weather.icon }}</p>
+                <p><strong>🌡 Temp:</strong> {{ current_weather.temp }}°C 
+                   (Feels like {{ current_weather.feel_like }}°C)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forecast Table -->
+    <h4 class="mb-3">📊 Next 5 Days Forecast</h4>
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered table-striped forecast-table">
+            <thead class="table-dark">
+                <tr>
+                    <th>Day</th>
+                    <th>Date</th>
+                    <th>Condition</th>
+                    <th>Temp (Min / Max)</th>
+                    <th>Icon</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in forecast %}
+                <tr>
+                    <td>{{ day.day }}</td>
+                    <td>{{ day.date }}</td>
+                    <td>{{ day.condition }}</td>
+                    <td>{{ day.temp_min }}° / {{ day.temp_max }}°</td>
+                    <td>{{ day.icon }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="text-center mb-5">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">📈 View Forecast Graph</a>
+    </div>
+
+    <!-- Favorites -->
+    <div class="card p-4 mb-4">
+        <h4>⭐ Favorite Cities</h4>
+        {% if favorites %}
+            <ul class="list-group">
+                {% for fav in favorites %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ fav.city_name }}
+                    <a href="{{ url_for('table.remove_favorite', city=fav.city_name) }}" 
+                       class="btn btn-sm btn-outline-danger">Remove</a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No favorite cities yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Search History -->
+    <div class="card p-4">
+        <h4>🕑 Search History</h4>
+        {% if history %}
+            <ul class="list-group">
+                {% for h in history %}
+                <li class="list-group-item">
+                    {{ h.city_name }} - <span class="badge bg-info">{{ h.summary_temp }}°C</span>
+                    <small class="text-muted ms-2">{{ h.searched_at.strftime('%d %b %Y %H:%M') }}</small>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No searches yet.</p>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <!-- Before Searching -->
+    <div class="alert alert-info shadow-sm text-center">
+        🔍 Enter a city name above to view current weather and forecast.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
