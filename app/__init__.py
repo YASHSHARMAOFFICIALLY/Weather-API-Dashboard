@@ -9,7 +9,7 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = "yash"  # Fixed key name
+    app.config['SECRET_KEY'] = "yashh"  
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///todo.db"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SESSION_COOKIE_SECURE'] = False
