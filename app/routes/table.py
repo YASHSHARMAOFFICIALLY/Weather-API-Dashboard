@@ -4,6 +4,12 @@ from app import db
 from app.models import City, Searchhistory, Favouritecity, Forecastday
 import requests
 from datetime import datetime
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import io
+from flask import Response
+
 table_bp = Blueprint("table",__name__,url_prefix="/table")
 API_KEY = "6b35acecf0f18c39200a27b46d68b971"
 BASE_URL = "https://api.openweathermap.org/data/2.5"
@@ -49,7 +55,14 @@ def get_forecast(city :str):
         })
     return forecast_list
 def get_user_searchhistory(user_id: int): 
-    return Searchhistory.query.filter_by(user_id=user_id).order_by(Searchhistory.searched_at.desc()).all()
+    return (
+    Searchhistory.query
+    .filter_by(user_id=user_id)
+    .order_by(Searchhistory.searched_at.desc())
+    .limit(5)
+    .all()
+    )
+
 def get_user_favorites(user_id: int):
     return Favouritecity.query.filter_by(user_id=user_id).all()
 def save_search(user_id: int, city: str, temp: float):
@@ -61,7 +74,6 @@ def save_search(user_id: int, city: str, temp: float):
     )
     db.session.add(new_search)
     db.session.commit()
-    
 @table_bp.route("/search",methods = ["POST"])
 @login_required
 def search_city():
@@ -127,6 +139,40 @@ def dashboard():
         history=history,
         favorites=favorites,
     )
+@table_bp.route("/clear_history")
+@login_required
+def clear_history():
+    Searchhistory.query.filter_by(user_id = current_user.id).delete()
+    db.session.commit()
+    flash("Search History cleared","Info")
+    return redirect(url_for("table.dashboard"))
+
+@table_bp.route("/forecast_plot/<city>")
+@login_required
+def forecast_plot(city):
+    forecast = get_forecast(city)
+    if not forecast:
+        flash("No forecast available.", "warning")
+        return redirect(url_for("table.dashboard"))
+    days = [f["day"] for f in forecast]
+    temp_max = [f["temp_max"] for f in forecast]
+    temp_min = [f["temp_min"] for f in forecast]
+    plt.figure(figsize=(6,4))
+    plt.plot(days, temp_max, marker='o', label="Max Temp (°C)", color="red")
+    plt.plot(days, temp_min, marker='o', label="Min Temp (°C)", color="blue")
+    plt.fill_between(days, temp_min, temp_max, color="lightblue", alpha=0.2)
+    plt.title("5-Day Temperature Forecast")
+    plt.xlabel("Day")
+    plt.ylabel("Temperature (°C)")
+    plt.legend()
+    plt.tight_layout()
+    img = io.BytesIO()
+    plt.savefig(img, format="png")
+    img.seek(0)
+    plt.close()
+
+    return Response(img.getvalue(), mimetype="image/png")
+
 
 
 

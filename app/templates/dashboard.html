@@ -76,6 +76,10 @@
                 <p><strong>🌤 Condition:</strong> {{ current_weather.condition }} {{ current_weather.icon }}</p>
                 <p><strong>🌡 Temp:</strong> {{ current_weather.temp }}°C 
                    (Feels like {{ current_weather.feel_like }}°C)</p>
+                <a href = "{{url_for('table.add_favorite',city = current_weather.city)}}"
+                class="btn btn-sm btn-primary">
+                Add to Favourite
+            </a>
             </div>
         </div>
     </div>
@@ -108,7 +112,7 @@
     </div>
 
     <div class="text-center mb-5">
-        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">📈 View Forecast Graph</a>
+        <a href="{{ url_for('table.forecast_plot',city = current_weather.city) }}" class="btn btn-outline-primary">📈 View Forecast Graph</a>
     </div>
 
     <!-- Favorites -->
@@ -132,6 +136,10 @@
     <!-- Search History -->
     <div class="card p-4">
         <h4>🕑 Search History</h4>
+        <a href="{{ url_for('table.clear_history') }}" 
+        class="btn btn-sm btn-warning mb-2">
+        🗑️ Clear History
+</a>
         {% if history %}
             <ul class="list-group">
                 {% for h in history %}

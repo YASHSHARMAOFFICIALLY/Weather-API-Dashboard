@@ -35,7 +35,6 @@ def login():
             return redirect(url_for("table.dashboard"))
         else:
             flash("Invalid username or password", "danger")
-
     return render_template("login.html")
 @auth_bp.route("/logout")
 @login_required

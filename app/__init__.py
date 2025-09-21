@@ -16,16 +16,13 @@ def create_app():
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
     app.config["DEBUG"] = True
-
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
-
     from app.routes.auth import auth_bp
     from app.routes.table import table_bp
     from app.routes.main import main_bp
-
     app.register_blueprint(auth_bp)
     app.register_blueprint(table_bp)
     app.register_blueprint(main_bp)
